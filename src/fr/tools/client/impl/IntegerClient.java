@@ -74,12 +74,13 @@ public class IntegerClient implements IClient<Integer> {
   }
 
   @Override
-  public void free() {
-    reader.interrupt();
-    write.interrupt();
+  public void free() throws IOException, InterruptedException {
+    reader.join();
+    write.join();
+    channel.close();
   }
 
-  public static void main(String[] args) throws IOException {
+  public static void main(String[] args) throws IOException, InterruptedException {
     if (args.length != 3) {
       System.err.println("Usage: java IntegerClient addr port size");
       return;
@@ -88,7 +89,7 @@ public class IntegerClient implements IClient<Integer> {
     InetSocketAddress server = new InetSocketAddress(args[0], Integer.valueOf(args[1]));
     var client = new IntegerClient(server, Integer.valueOf(args[2]));
     client.launch();
-    // client.free();
+    client.free();
   }
 
 

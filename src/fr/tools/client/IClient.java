@@ -1,5 +1,6 @@
 package fr.tools.client;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public interface IClient<E> {
@@ -13,5 +14,5 @@ public interface IClient<E> {
 
   public void launch();
 
-  public void free();
+  public void free() throws IOException, InterruptedException;
 }
