@@ -31,6 +31,11 @@ public class IntegerClient implements IClient<Integer> {
   }
 
   @Override
+  public IPacket<Integer> buildPacket(ByteBuffer buffer) {
+    return IntegerPacket.from(buffer);
+  }
+
+  @Override
   public void sendPacket() {
     for (var i = 0; i < size; i++) {
       int value = random.nextInt();
@@ -51,7 +56,7 @@ public class IntegerClient implements IClient<Integer> {
       try {
         var buffer = ByteBuffer.allocate(Integer.BYTES);
         channel.read(buffer);
-        var packet = IntegerPacket.from(buffer);
+        var packet = buildPacket(buffer);
         System.out.println("value: " + packet.getValue());
         Thread.sleep(SLEEP);
       } catch (IOException e) {
@@ -85,4 +90,6 @@ public class IntegerClient implements IClient<Integer> {
     client.launch();
     // client.free();
   }
+
+
 }
