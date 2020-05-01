@@ -1,7 +1,8 @@
 # tcp-client-tools
 
-## IntegerClient
-```java fr.tools.client.impl.IntegerClient host port numberOfElements timeout ```
+## Usage example
+### IntegerClient
+```mvn exec:java -Dexec.mainClass="fr.tcp.client.impl.IntegerClient" -Dexec.args="-h localhost -p 7777 -n 10 -t 1 -l 2" ```
 
-## StringClient
-```java fr.tcp.client.impl.StringClient host port numberOfElements timeout charset ```
+### StringClient
+```mvn exec:java -Dexec.mainClass="fr.tcp.client.impl.StringClient" -Dexec.args="-h localhost -p 7777 -n 10 -t 1 -l 2" ```

@@ -26,16 +26,11 @@ public abstract class AbstractClient<E> implements IClient<E> {
     this.channel = SocketChannel.open(servAddr);
   }
 
-  public AbstractClient(InetSocketAddress servAddr, IPacket<E> packetBuilder, int size, int timeout)
-      throws IOException {
-    this(servAddr, packetBuilder, size, timeout, Integer.MAX_VALUE);
-  }
-
   @Override
   public void sendPacket() {
     for (var i = 0; i < size; i++) {
       try {
-        channel.write(packetBuilder.getRandomPacket());
+        channel.write(packetBuilder.getBoundedRandomPacket(contentMaxLength));
         Thread.sleep(timeout);
       } catch (IOException e) {
         System.out.println(e);
