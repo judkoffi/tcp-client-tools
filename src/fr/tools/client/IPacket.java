@@ -1,5 +1,6 @@
 package fr.tools.client;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /*********************************
@@ -7,7 +8,7 @@ import java.nio.ByteBuffer;
  ********************************/
 public interface IPacket<E> {
 
-  ByteBuffer toBuffer();
+  ByteBuffer buildBuffer(E value);
 
-  E getValue();
+  E getValueFrom(ByteBuffer bb) throws IOException;
 }

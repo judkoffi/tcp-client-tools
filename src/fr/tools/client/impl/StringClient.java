@@ -13,70 +13,64 @@ import fr.tools.client.IPacket;
 public class StringClient implements IClient<String> {
 
   private static class StringPacket implements IPacket<String> {
-    private ByteBuffer buffer;
     private final Charset charset;
+    private SocketChannel channel;
 
-    private StringPacket(String value, Charset charset) {
-      this.buffer = charset.encode(value).compact();
+    private StringPacket(SocketChannel channel, Charset charset) {
       this.charset = charset;
+      this.channel = channel;
     }
 
-    private StringPacket(ByteBuffer bb, Charset charset) {
-      this.buffer = bb.compact();
-      this.charset = charset;
-    }
-
-    private StringPacket(String value) {
-      this(value, StandardCharsets.UTF_8);
-    }
-
-    private StringPacket(ByteBuffer bb) {
-      this(bb, StandardCharsets.UTF_8);
-    }
-
-    public static StringPacket from(String value) {
-      return new StringPacket(value);
-    }
-
-    public static StringPacket from(ByteBuffer buffer) {
-      return new StringPacket(buffer);
+    private StringPacket(SocketChannel channel) {
+      this(channel, StandardCharsets.UTF_8);
     }
 
     @Override
-    public ByteBuffer toBuffer() {
-      var bb = ByteBuffer.allocate(Integer.BYTES + buffer.capacity());
-      bb.putInt(buffer.capacity());
-      bb.put(buffer);
-      return bb;
+    public ByteBuffer buildBuffer(String value) {
+      var encoded = charset.encode(value);
+      var buffer = ByteBuffer.allocate(BUFFER_SIZE);
+      buffer.putInt(encoded.capacity());
+      buffer.put(encoded);
+      return buffer;
     }
 
     @Override
-    public String getValue() {
-      buffer.flip();
-      var size = buffer.getInt();
-      var value = charset.decode(buffer).toString();
-      buffer.clear();
-      return value;
+    public String getValueFrom(ByteBuffer bb) throws IOException {
+      var sizeBuff = ByteBuffer.allocate(Integer.BYTES);
+      IClient.readFully(channel, sizeBuff);
+      int size = sizeBuff.flip().getInt();
+      System.out.println("size: " + size);
+      bb.limit(size);
+      IClient.readFully(channel, bb);
+
+
+
+      bb.flip();
+      // int size = bb.getInt();
+      // bb.limit(size);
+      String result = charset.decode(bb).toString();
+      bb.compact();
+      return result;
     }
   }
 
-  private final Charset charset;
   private final Thread reader;
   private final Thread write;
-  private final static int SLEEP = 100;
+  private final static int SLEEP = 1;
   private SocketChannel channel;
   private ThreadLocalRandom random;
   private final int size;
-  private final static int BUFER_SIZE = 1024;
-  private final ByteBuffer readBuffer = ByteBuffer.allocate(BUFER_SIZE);
+  private final static int BUFFER_SIZE = 1024;
+  private final ByteBuffer readBuffer = ByteBuffer.allocate(BUFFER_SIZE);
+  private final IPacket<String> builder;
 
   public StringClient(InetSocketAddress servAddr, int size, Charset charset) throws IOException {
-    this.charset = charset;
     this.reader = new Thread(this::readPacket);
     this.write = new Thread(this::sendPacket);
     this.random = ThreadLocalRandom.current();
     this.size = size;
     this.channel = SocketChannel.open(servAddr);
+    this.builder = new StringPacket(channel,charset);
   }
 
   public StringClient(InetSocketAddress servAddr, int size) throws IOException {
@@ -84,49 +78,36 @@ public class StringClient implements IClient<String> {
   }
 
   @Override
-  public IPacket<String> buildPacket(String elt) {
-    return StringPacket.from(elt);
-  }
-
-  @Override
-  public IPacket<String> buildPacket(ByteBuffer buffer) {
-    return StringPacket.from(buffer);
-  }
-
-  @Override
   public void sendPacket() {
     for (var i = 0; i < size; i++) {
-      String value = generateString(1 + random.nextInt(BUFER_SIZE) % (BUFER_SIZE - Integer.BYTES));
+      var length = 1 + random.nextInt(BUFFER_SIZE) % (BUFFER_SIZE - Integer.BYTES);
+      String value = generateString(5);
       try {
-        channel.write(buildPacket(value).toBuffer().flip());
-        Thread.sleep(SLEEP / 2);
+        var bb = builder.buildBuffer(value).flip();
+        channel.write(bb);
+        Thread.sleep(0);
       } catch (IOException e) {
         System.out.println(e);
       } catch (InterruptedException e) {
         return;
       }
     }
-
   }
 
-  private static boolean readFully(SocketChannel sc, ByteBuffer bb) throws IOException {
-    while (bb.hasRemaining()) {
-      int read = sc.read(bb);
-      if (read == -1)
-        return false;
-    }
-    return true;
-  }
 
   @Override
   public void readPacket() {
     for (var i = 0; i < size; i++) {
       try {
+        var sizeBuff = ByteBuffer.allocate(Integer.BYTES);
         readBuffer.clear();
-        readFully(channel, readBuffer);
-        System.out.println(readBuffer.remaining());
-        var packet = buildPacket(readBuffer);
-        System.out.println("value: " + packet.getValue());
+        IClient.readFully(channel, sizeBuff);
+        int size = sizeBuff.flip().getInt();
+        System.out.println("size: " + size);
+        readBuffer.limit(size);
+        IClient.readFully(channel, readBuffer);
+        var value = builder.getValueFrom(readBuffer);
+        System.out.println("value: " + value);
         Thread.sleep(SLEEP);
       } catch (IOException e) {
         System.out.println(e);
@@ -143,9 +124,9 @@ public class StringClient implements IClient<String> {
 
   @Override
   public void free() throws IOException, InterruptedException {
-    reader.join();
-    write.join();
-    channel.close();
+    // write.join();
+    // reader.join();
+    // channel.close();
   }
 
 

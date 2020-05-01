@@ -10,36 +10,21 @@ import fr.tools.client.IPacket;
 
 public class IntegerClient implements IClient<Integer> {
 
-  public static class IntegerPacket implements IPacket<Integer> {
-    private ByteBuffer buffer;
-
-    private IntegerPacket(int value) {
-      this.buffer = ByteBuffer.allocate(Integer.BYTES);
-      this.buffer.putInt(value);
-    }
-
-    private IntegerPacket(ByteBuffer buffer) {
-      this.buffer = buffer;
-    }
-
-    public static IntegerPacket from(Integer value) {
-      return new IntegerPacket(value);
-    }
-
-    public static IntegerPacket from(ByteBuffer buffer) {
-      return new IntegerPacket(buffer);
-    }
+  private static class IntegerPacket implements IPacket<Integer> {
+    private final ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
 
     @Override
-    public ByteBuffer toBuffer() {
-      return buffer.duplicate();
-    }
-
-    @Override
-    public Integer getValue() {
-      buffer.flip();
-      int value = buffer.getInt();
+    public ByteBuffer buildBuffer(Integer value) {
       buffer.clear();
+      buffer.putInt(value);
+      return buffer;
+    }
+
+    @Override
+    public Integer getValueFrom(ByteBuffer bb) {
+      bb.flip();
+      int value = bb.getInt();
+      bb.compact();
       return value;
     }
   }
@@ -51,6 +36,8 @@ public class IntegerClient implements IClient<Integer> {
   private SocketChannel channel;
   private ThreadLocalRandom random;
   private final int size;
+  private ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
+  private final IPacket<Integer> builder = new IntegerPacket();
 
   public IntegerClient(InetSocketAddress servAddr, int size) throws IOException {
     this.reader = new Thread(this::readPacket);
@@ -60,22 +47,13 @@ public class IntegerClient implements IClient<Integer> {
     this.channel = SocketChannel.open(servAddr);
   }
 
-  @Override
-  public IPacket<Integer> buildPacket(Integer value) {
-    return IntegerPacket.from(value);
-  }
-
-  @Override
-  public IPacket<Integer> buildPacket(ByteBuffer buffer) {
-    return IntegerPacket.from(buffer);
-  }
 
   @Override
   public void sendPacket() {
     for (var i = 0; i < size; i++) {
       int value = random.nextInt();
       try {
-        channel.write(buildPacket(value).toBuffer().flip());
+        channel.write(builder.buildBuffer(value).flip());
         Thread.sleep(SLEEP / 2);
       } catch (IOException e) {
         System.out.println(e);
@@ -89,10 +67,10 @@ public class IntegerClient implements IClient<Integer> {
   public void readPacket() {
     for (var i = 0; i < size; i++) {
       try {
-        var buffer = ByteBuffer.allocate(Integer.BYTES);
-        channel.read(buffer);
-        var packet = buildPacket(buffer);
-        System.out.println("value: " + packet.getValue());
+        buffer.clear();
+        IClient.readFully(channel, buffer);
+        var value = builder.getValueFrom(buffer);
+        System.out.println("value: " + value);
         Thread.sleep(SLEEP);
       } catch (IOException e) {
         System.out.println(e);
