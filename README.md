@@ -14,3 +14,10 @@ java -jar client-integer.jar -h localhost -p 7777 -n 10 -t 1 -l 2
 mvn exec:java -Dexec.mainClass="fr.tcp.client.impl.StringClient" -Dexec.args="-h localhost -p 7777 -n 10 -t 1 -l 2"     
 java -jar client-string.jar -h localhost -p 7777 -n 10 -t 1 -l 2    
 ```   
+
+
+### MessageClient  
+```   
+mvn exec:java -Dexec.mainClass="fr.tcp.client.impl.MessageClient" -Dexec.args="-h localhost -p 7777 -n 10 -t 1 -l 2 -name yopBoy"     
+java -jar client-message.jar -h localhost -p 7777 -n 10 -t 1 -l 2 -name yopBoy    
+```   
