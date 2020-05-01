@@ -1,0 +1,9 @@
+language: java
+jdk: openjdk12
+
+os:
+  - linux
+
+script: 
+  - mvn package
+
