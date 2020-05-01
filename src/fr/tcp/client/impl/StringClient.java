@@ -129,7 +129,7 @@ public class StringClient extends AbstractClient<String> {
     int port = Integer.valueOf(cmd.getOptionValue("port"));
     int size = parseInt(cmd.getOptionValue("numberOfElements")).orElse(10);
     int timeout = parseInt(cmd.getOptionValue("timeout")).orElse(1);
-    int length = parseInt(cmd.getOptionValue("length")).orElse(Integer.MAX_VALUE);
+    int length = parseInt(cmd.getOptionValue("length")).orElse(BUFFER_SIZE - Integer.BYTES);
 
     String charsetName = cmd.getOptionValue("charset") == null //
         ? "UTF-8"
