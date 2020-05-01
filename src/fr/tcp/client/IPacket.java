@@ -15,6 +15,7 @@ public interface IPacket<E> {
    */
   ByteBuffer getRandomPacket();
 
+  ByteBuffer getPacketFromValue(E value);
 
   /**
    * Generate a random bounded buffer

@@ -3,7 +3,6 @@ package fr.tcp.client.impl;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.util.concurrent.ThreadLocalRandom;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -13,35 +12,11 @@ import fr.tcp.client.AbstractClient;
 import fr.tcp.client.Helper;
 import fr.tcp.client.IClient;
 import fr.tcp.client.IPacket;
+import fr.tcp.client.impl.packet.IntegerPacket;
 
 public class IntegerClient extends AbstractClient<Integer> {
 
-  private static class IntegerPacket implements IPacket<Integer> {
-    private final ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
-    private final ThreadLocalRandom random = ThreadLocalRandom.current();
 
-    @Override
-    public ByteBuffer getRandomPacket() {
-      buffer.clear();
-      buffer.putInt(random.nextInt(Integer.MAX_VALUE));
-      return buffer.flip();
-    }
-
-    @Override
-    public Integer getValueFrom(ByteBuffer bb) {
-      bb.flip();
-      int value = bb.getInt();
-      bb.compact();
-      return value;
-    }
-
-    @Override
-    public ByteBuffer getBoundedRandomPacket(int lenght) {
-      buffer.clear();
-      buffer.putInt(random.nextInt(lenght));
-      return buffer.flip();
-    }
-  }
 
   private ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
 
