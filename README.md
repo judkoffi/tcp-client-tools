@@ -1,5 +1,7 @@
 # tcp-client-tools
 
+[![Build Status](https://travis-ci.org/judkoffi/tcp-client-tools.svg?branch=master)](https://travis-ci.org/judkoffi/tcp-client-tools)
+
 ## Usage example
 ### IntegerClient   
 ```
