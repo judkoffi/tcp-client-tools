@@ -26,7 +26,7 @@ public class StringClient implements IClient<String> {
     }
 
     @Override
-    public ByteBuffer buildBuffer(String value) {
+    public ByteBuffer getRandomPacket(String value) {
       var encoded = charset.encode(value);
       var buffer = ByteBuffer.allocate(BUFFER_SIZE);
       buffer.putInt(encoded.capacity());
@@ -83,7 +83,7 @@ public class StringClient implements IClient<String> {
       var length = 1 + random.nextInt(BUFFER_SIZE) % (BUFFER_SIZE - Integer.BYTES);
       String value = generateString(5);
       try {
-        var bb = builder.buildBuffer(value).flip();
+        var bb = builder.getRandomPacket(value).flip();
         channel.write(bb);
         Thread.sleep(0);
       } catch (IOException e) {

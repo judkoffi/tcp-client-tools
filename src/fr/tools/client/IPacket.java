@@ -8,7 +8,12 @@ import java.nio.ByteBuffer;
  ********************************/
 public interface IPacket<E> {
 
-  ByteBuffer buildBuffer(E value);
+  /**
+   * Generate a random buffer to be send in read mode
+   * 
+   * @return a ByteBuffer ready to be send
+   */
+  ByteBuffer getRandomPacket();
 
   E getValueFrom(ByteBuffer bb) throws IOException;
 }

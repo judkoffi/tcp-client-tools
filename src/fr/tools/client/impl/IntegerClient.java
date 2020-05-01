@@ -3,21 +3,22 @@ package fr.tools.client.impl;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
 import java.util.concurrent.ThreadLocalRandom;
+import fr.tools.client.AbstractClient;
 import fr.tools.client.IClient;
 import fr.tools.client.IPacket;
 
-public class IntegerClient implements IClient<Integer> {
+public class IntegerClient extends AbstractClient<Integer> {
 
   private static class IntegerPacket implements IPacket<Integer> {
     private final ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
+    private final ThreadLocalRandom random = ThreadLocalRandom.current();
 
     @Override
-    public ByteBuffer buildBuffer(Integer value) {
+    public ByteBuffer getRandomPacket() {
       buffer.clear();
-      buffer.putInt(value);
-      return buffer;
+      buffer.putInt(random.nextInt(Integer.MAX_VALUE));
+      return buffer.flip();
     }
 
     @Override
@@ -29,38 +30,12 @@ public class IntegerClient implements IClient<Integer> {
     }
   }
 
-
-  private final Thread reader;
-  private final Thread write;
-  private final static int SLEEP = 100;
-  private SocketChannel channel;
-  private ThreadLocalRandom random;
-  private final int size;
   private ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
   private final IPacket<Integer> builder = new IntegerPacket();
 
-  public IntegerClient(InetSocketAddress servAddr, int size) throws IOException {
-    this.reader = new Thread(this::readPacket);
-    this.write = new Thread(this::sendPacket);
-    this.random = ThreadLocalRandom.current();
-    this.size = size;
-    this.channel = SocketChannel.open(servAddr);
-  }
-
-
-  @Override
-  public void sendPacket() {
-    for (var i = 0; i < size; i++) {
-      int value = random.nextInt();
-      try {
-        channel.write(builder.buildBuffer(value).flip());
-        Thread.sleep(SLEEP / 2);
-      } catch (IOException e) {
-        System.out.println(e);
-      } catch (InterruptedException e) {
-        return;
-      }
-    }
+  public IntegerClient(InetSocketAddress servAddr, IPacket<Integer> packetBuilder, int size,
+      int timeout) throws IOException {
+    super(servAddr, packetBuilder, size, timeout);
   }
 
   @Override
@@ -71,7 +46,7 @@ public class IntegerClient implements IClient<Integer> {
         IClient.readFully(channel, buffer);
         var value = builder.getValueFrom(buffer);
         System.out.println("value: " + value);
-        Thread.sleep(SLEEP);
+        Thread.sleep(timeout);
       } catch (IOException e) {
         System.out.println(e);
       } catch (InterruptedException e) {
@@ -80,30 +55,19 @@ public class IntegerClient implements IClient<Integer> {
     }
   }
 
-  @Override
-  public void launch() {
-    write.start();
-    reader.start();
-  }
-
-  @Override
-  public void free() throws IOException, InterruptedException {
-    reader.join();
-    write.join();
-    channel.close();
-  }
 
   public static void main(String[] args) throws IOException, InterruptedException {
-    if (args.length != 3) {
-      System.err.println("Usage: java IntegerClient addr port size");
+    if (args.length != 4) {
+      System.err.println("Usage: java IntegerClient addr port nbElement timeout");
       return;
     }
 
     InetSocketAddress server = new InetSocketAddress(args[0], Integer.valueOf(args[1]));
-    var client = new IntegerClient(server, Integer.valueOf(args[2]));
+    var size = Integer.valueOf(args[2]);
+    var timeout = Integer.valueOf(args[3]);
+    var packetBuilder = new IntegerPacket();
+    var client = new IntegerClient(server, packetBuilder, size, timeout);
     client.launch();
     client.free();
   }
-
-
 }
