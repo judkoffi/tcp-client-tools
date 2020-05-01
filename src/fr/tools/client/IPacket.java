@@ -15,5 +15,12 @@ public interface IPacket<E> {
    */
   ByteBuffer getRandomPacket();
 
+  /**
+   * Get E value from incoming buffer a write mode
+   * 
+   * @param bb: origin buffer
+   * @return E value
+   * @throws IOException
+   */
   E getValueFrom(ByteBuffer bb) throws IOException;
 }

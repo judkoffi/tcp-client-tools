@@ -11,7 +11,7 @@ public abstract class AbstractClient<E> implements IClient<E> {
   protected SocketChannel channel;
   protected final int size;
   protected final int timeout;
-  private final IPacket<E> packetBuilder;
+  protected final IPacket<E> packetBuilder;
 
   public AbstractClient(InetSocketAddress servAddr, IPacket<E> packetBuilder, int size, int timeout)
       throws IOException {
@@ -28,7 +28,7 @@ public abstract class AbstractClient<E> implements IClient<E> {
     for (var i = 0; i < size; i++) {
       try {
         channel.write(packetBuilder.getRandomPacket());
-        Thread.sleep(timeout / 2);
+        Thread.sleep(timeout);
       } catch (IOException e) {
         System.out.println(e);
       } catch (InterruptedException e) {

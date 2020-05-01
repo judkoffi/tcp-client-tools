@@ -31,7 +31,6 @@ public class IntegerClient extends AbstractClient<Integer> {
   }
 
   private ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
-  private final IPacket<Integer> builder = new IntegerPacket();
 
   public IntegerClient(InetSocketAddress servAddr, IPacket<Integer> packetBuilder, int size,
       int timeout) throws IOException {
@@ -44,9 +43,9 @@ public class IntegerClient extends AbstractClient<Integer> {
       try {
         buffer.clear();
         IClient.readFully(channel, buffer);
-        var value = builder.getValueFrom(buffer);
+        var value = packetBuilder.getValueFrom(buffer);
         System.out.println("value: " + value);
-        Thread.sleep(timeout);
+        Thread.sleep(timeout * 2);
       } catch (IOException e) {
         System.out.println(e);
       } catch (InterruptedException e) {
