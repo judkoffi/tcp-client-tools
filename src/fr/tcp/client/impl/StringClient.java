@@ -90,7 +90,7 @@ public class StringClient extends AbstractClient<String> {
 
   public static void main(String[] args) throws IOException, InterruptedException {
     if (args.length != 5) {
-      System.err.println("Usage: java StringClient addr port nbElements timeout charset");
+      System.err.println("Usage: java StringClient addr port numberOfElements timeout charset");
       return;
     }
 

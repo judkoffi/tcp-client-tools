@@ -57,7 +57,7 @@ public class IntegerClient extends AbstractClient<Integer> {
 
   public static void main(String[] args) throws IOException, InterruptedException {
     if (args.length != 4) {
-      System.err.println("Usage: java IntegerClient addr port nbElements timeout");
+      System.err.println("Usage: java IntegerClient addr port numberOfElements timeout");
       return;
     }
 
