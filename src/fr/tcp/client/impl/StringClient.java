@@ -25,7 +25,9 @@ public class StringClient extends AbstractClient<String> {
 
     @Override
     public ByteBuffer getRandomPacket() {
-      String value = generateRandomString(10);
+      var random = ThreadLocalRandom.current();
+      int length = random.nextInt(BUFFER_SIZE) % (BUFFER_SIZE - Integer.BYTES);
+      String value = generateRandomString(length);
       ByteBuffer encoded = charset.encode(value);
       int encodedValueLength = encoded.limit();
       ByteBuffer bb = ByteBuffer.allocate(Integer.BYTES + encodedValueLength);
