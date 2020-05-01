@@ -5,5 +5,3 @@
 
 ## StringClient
 ```java fr.tcp.client.impl.StringClient host port numberOfElements timeout charset ```
-
-

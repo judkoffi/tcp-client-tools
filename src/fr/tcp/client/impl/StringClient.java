@@ -10,6 +10,7 @@ import fr.tcp.client.AbstractClient;
 import fr.tcp.client.IClient;
 import fr.tcp.client.IPacket;
 
+
 public class StringClient extends AbstractClient<String> {
 
   private static class StringPacket implements IPacket<String> {
@@ -23,10 +24,7 @@ public class StringClient extends AbstractClient<String> {
       this.charset = charset;
     }
 
-    @Override
-    public ByteBuffer getRandomPacket() {
-      var random = ThreadLocalRandom.current();
-      int length = random.nextInt(BUFFER_SIZE) % (BUFFER_SIZE - Integer.BYTES);
+    private ByteBuffer getPacket(int length) {
       String value = generateRandomString(length);
       ByteBuffer encoded = charset.encode(value);
       int encodedValueLength = encoded.limit();
@@ -35,6 +33,18 @@ public class StringClient extends AbstractClient<String> {
       bb.put(encoded);
       bb.flip();
       return bb;
+    }
+
+    @Override
+    public ByteBuffer getRandomPacket() {
+      var random = ThreadLocalRandom.current();
+      int length = random.nextInt(BUFFER_SIZE) % (BUFFER_SIZE - Integer.BYTES);
+      return getPacket(length);
+    }
+
+    @Override
+    public ByteBuffer getBoundedRandomPacket(int length) {
+      return getPacket(length);
     }
 
     @Override
@@ -58,10 +68,17 @@ public class StringClient extends AbstractClient<String> {
       }
       return sb.toString();
     }
+
+
   }
 
   private final static int BUFFER_SIZE = 1024;
   private final ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
+
+  public StringClient(InetSocketAddress servAddr, IPacket<String> packetBuilder, int size,
+      int timeout, int strLength) throws IOException {
+    super(servAddr, packetBuilder, size, timeout, strLength);
+  }
 
   public StringClient(InetSocketAddress servAddr, IPacket<String> packetBuilder, int size,
       int timeout) throws IOException {
@@ -89,8 +106,10 @@ public class StringClient extends AbstractClient<String> {
   }
 
   public static void main(String[] args) throws IOException, InterruptedException {
-    if (args.length != 5) {
-      System.err.println("Usage: java StringClient addr port numberOfElements timeout charset");
+    if (args.length < 5) {
+      System.err
+        .println(
+            "Usage: java StringClient addr port numberOfElements timeout charset [msgMaxLength]");
       return;
     }
 
@@ -102,8 +121,10 @@ public class StringClient extends AbstractClient<String> {
         ? Charset.forName(charsetName)
         : StandardCharsets.UTF_8;
 
+    var strLength = parseInt(args[5]).orElse(Integer.MAX_VALUE);
     var packetBuilder = new StringPacket(charset);
-    var client = new StringClient(server, packetBuilder, size, timeout);
+
+    StringClient client = new StringClient(server, packetBuilder, size, timeout, strLength);
     client.launch();
     client.free();
   }

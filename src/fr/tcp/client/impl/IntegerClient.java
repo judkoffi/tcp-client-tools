@@ -3,6 +3,7 @@ package fr.tcp.client.impl;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 import fr.tcp.client.AbstractClient;
 import fr.tcp.client.IClient;
@@ -28,13 +29,20 @@ public class IntegerClient extends AbstractClient<Integer> {
       bb.compact();
       return value;
     }
+
+    @Override
+    public ByteBuffer getBoundedRandomPacket(int lenght) {
+      buffer.clear();
+      buffer.putInt(random.nextInt(lenght));
+      return buffer.flip();
+    }
   }
 
   private ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
 
   public IntegerClient(InetSocketAddress servAddr, IPacket<Integer> packetBuilder, int size,
-      int timeout) throws IOException {
-    super(servAddr, packetBuilder, size, timeout);
+      int timeout, Integer valueLimit) throws IOException {
+    super(servAddr, packetBuilder, size, timeout, valueLimit);
   }
 
   @Override
@@ -54,18 +62,24 @@ public class IntegerClient extends AbstractClient<Integer> {
     }
   }
 
-
   public static void main(String[] args) throws IOException, InterruptedException {
-    if (args.length != 4) {
-      System.err.println("Usage: java IntegerClient addr port numberOfElements timeout");
+    if (args.length < 4) {
+      System.err.println("Usage: java IntegerClient addr port numberOfElements timeout [maxValue]");
       return;
     }
 
+    System.out.println(Arrays.deepToString(args));
     InetSocketAddress server = new InetSocketAddress(args[0], Integer.valueOf(args[1]));
     var size = Integer.valueOf(args[2]);
     var timeout = Integer.valueOf(args[3]);
+
+    System.out.println("val :" + args[4]);
+
+
+    var valueLimit = parseInt(args[4]).orElse(Integer.MAX_VALUE);
     var packetBuilder = new IntegerPacket();
-    var client = new IntegerClient(server, packetBuilder, size, timeout);
+
+    IntegerClient client = new IntegerClient(server, packetBuilder, size, timeout, valueLimit);
     client.launch();
     client.free();
   }

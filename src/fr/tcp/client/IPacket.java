@@ -9,11 +9,20 @@ import java.nio.ByteBuffer;
 public interface IPacket<E> {
 
   /**
-   * Generate a random buffer to be send in read mode
+   * Generate a random buffer
    * 
-   * @return a ByteBuffer ready to be send
+   * @return a ByteBuffer ready to be send (read mode)
    */
   ByteBuffer getRandomPacket();
+
+
+  /**
+   * Generate a random bounded buffer
+   * 
+   * @param lenght: length of buffer content
+   * @return a ByteBuffer ready to be send (read mode)
+   */
+  ByteBuffer getBoundedRandomPacket(int length);
 
   /**
    * Get E value from incoming buffer a write mode
