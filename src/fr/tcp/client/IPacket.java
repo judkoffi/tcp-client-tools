@@ -1,4 +1,4 @@
-package fr.tools.client;
+package fr.tcp.client;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

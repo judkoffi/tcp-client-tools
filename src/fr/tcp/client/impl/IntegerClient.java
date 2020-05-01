@@ -1,12 +1,12 @@
-package fr.tools.client.impl;
+package fr.tcp.client.impl;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ThreadLocalRandom;
-import fr.tools.client.AbstractClient;
-import fr.tools.client.IClient;
-import fr.tools.client.IPacket;
+import fr.tcp.client.AbstractClient;
+import fr.tcp.client.IClient;
+import fr.tcp.client.IPacket;
 
 public class IntegerClient extends AbstractClient<Integer> {
 

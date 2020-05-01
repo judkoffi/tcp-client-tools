@@ -1,9 +1,9 @@
-package fr.tools.client.impl;
+package fr.tcp.client.impl;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import fr.tools.client.AbstractClient;
-import fr.tools.client.IPacket;
+import fr.tcp.client.AbstractClient;
+import fr.tcp.client.IPacket;
 
 public class StringClient extends AbstractClient<String> {
 
@@ -13,9 +13,6 @@ public class StringClient extends AbstractClient<String> {
   }
 
   @Override
-  public void readPacket() {
-    // TODO Auto-generated method stub
-
-  }
+  public void readPacket() {}
 
 }
