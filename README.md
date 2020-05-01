@@ -1,2 +1,4 @@
 # tcp-client-tools
-```cat input.dat - | java fr.tools.client.impl.IntegerClient addr  port ```
+
+## Example
+```java fr.tools.client.impl.{Client} host port nbValue timeout ```
